@@ -157,3 +157,7 @@ scripts/experiments.sh every experiment + summary
 sql/schema.sql         accounts, merchants, ledger_entries
 results/               per-run JSON and RESULTS.md, raw Kafka results, SUMMARY.md
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
