@@ -1,4 +1,4 @@
-# payments-stream-benchmark
+# kafka-payments-pipeline-benchmark
 
 An end-to-end, reproducible benchmark of a real-time payments pipeline on Kafka, Kafka Streams, Redis and PostgreSQL, run on **2,000,000 synthetic card transactions**, plus a LinkedIn-style raw Kafka throughput test for comparison.
 

@@ -52,8 +52,8 @@ Clone into your Linux home directory, **not** under `/mnt/c/...`. Files on the W
 
 ```bash
 cd ~
-git clone https://github.com/<org>/<repo>.git
-cd <repo>
+git clone https://github.com/creAIveLabs-Test/kafka-payments-pipeline-benchmark.git
+cd kafka-payments-pipeline-benchmark
 ./mvnw -q package -DskipTests
 ```
 
