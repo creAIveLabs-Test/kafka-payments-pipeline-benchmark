@@ -1,0 +1,4 @@
+{"transactions": "2000000", "partitions": "12", "threadsPerStage": "6", "scorerGuarantee": "at_least_once",
+ "whaleShare": "0.3", "saltBuckets": "4", "generatorRate": "0 tx/s (0 = unlimited)", "brokers": "1 (replication factor 1)",
+ "machine": "Apple M2, 8 cores, 16 GB RAM",
+ "kafka": "apache/kafka:3.8.0 (KRaft)", "redis": "redis:7-alpine", "postgres": "postgres:16-alpine"}

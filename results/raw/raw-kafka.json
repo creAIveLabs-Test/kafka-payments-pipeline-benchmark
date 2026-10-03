@@ -1,0 +1,39 @@
+{
+  "recordSizeBytes": 100,
+  "records": 2000000,
+  "tests": [
+    {
+      "name": "consumer_6p",
+      "recordsPerSec": 329489,
+      "mbPerSec": 31.4225
+    },
+    {
+      "name": "producer_acks1_lz4_6p",
+      "recordsPerSec": 828157,
+      "mbPerSec": 78.98,
+      "avgLatencyMs": "2.49",
+      "p99LatencyMs": "8"
+    },
+    {
+      "name": "producer_acks1_nocompression_1p",
+      "recordsPerSec": 866175,
+      "mbPerSec": 82.6,
+      "avgLatencyMs": "2.91",
+      "p99LatencyMs": "11"
+    },
+    {
+      "name": "producer_acks1_nocompression_6p",
+      "recordsPerSec": 935891,
+      "mbPerSec": 89.25,
+      "avgLatencyMs": "2.74",
+      "p99LatencyMs": "9"
+    },
+    {
+      "name": "producer_acksall_idempotent_6p",
+      "recordsPerSec": 977039,
+      "mbPerSec": 93.18,
+      "avgLatencyMs": "2.17",
+      "p99LatencyMs": "7"
+    }
+  ]
+}

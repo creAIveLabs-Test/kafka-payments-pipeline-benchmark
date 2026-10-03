@@ -1,0 +1,7 @@
+target/
+results/state/
+results/runs/*/state/
+*.log
+.idea/
+.vscode/
+.DS_Store

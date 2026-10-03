@@ -1,0 +1,24 @@
+{
+  "stage" : "ledger",
+  "records" : 2000000,
+  "firstMs" : 1790981647227,
+  "lastMs" : 1790981716675,
+  "durationMs" : 69448,
+  "avgRecordsPerSec" : 28799,
+  "peak5sRecordsPerSec" : 47025,
+  "endToEndLatencyMs" : {
+    "p50" : 21215,
+    "p95" : 50047,
+    "p99" : 52639,
+    "max" : 53119
+  },
+  "threads" : 6,
+  "rowsInserted" : 2000000,
+  "duplicatesSkipped" : 0,
+  "rowsInLedgerTable" : 2000000,
+  "decisions" : {
+    "APPROVE" : 1001105,
+    "DECLINE" : 706498,
+    "REVIEW" : 292397
+  }
+}
