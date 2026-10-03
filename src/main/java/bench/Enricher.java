@@ -64,7 +64,6 @@ final class Enricher {
 
     static void run(Cfg cfg) throws Exception {
         int threads = cfg.integer("threads", 6);
-        long idleExitMs = cfg.lng("idle-exit-ms", 20_000);
         String group = "enricher-" + cfg.runId();
 
         HikariConfig hc = new HikariConfig();
@@ -75,10 +74,11 @@ final class Enricher {
         jc.setMaxTotal(threads * 2);
         JedisPool redis = new JedisPool(jc, cfg.redisHost(), cfg.redisPort());
 
-        Stats stats = new Stats("enricher");
+        Stats stats = new Stats("enricher", cfg);
         AtomicLong cacheHits = new AtomicLong();
         AtomicLong cacheMisses = new AtomicLong();
         AtomicBoolean running = new AtomicBoolean(true);
+        AtomicLong commitFailures = new AtomicLong();
         stats.startPrinter();
 
         ExecutorService pool = Executors.newFixedThreadPool(threads);
@@ -89,8 +89,9 @@ final class Enricher {
                     consumer.subscribe(List.of(IN));
                     while (running.get()) {
                         ConsumerRecords<String, String> recs = consumer.poll(Duration.ofMillis(200));
+                        if (cfg.doneFile().exists()) running.set(false);
                         if (recs.isEmpty()) {
-                            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > idleExitMs) running.set(false);
+                            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > cfg.safetyIdleMs()) running.set(false);
                             continue;
                         }
                         List<ConsumerRecord<String, String>> list = new ArrayList<>(recs.count());
@@ -125,7 +126,15 @@ final class Enricher {
                             producer.send(new ProducerRecord<>(OUT, list.get(i).key(), JSON.writeValueAsString(tx)));
                         }
                         producer.flush();      // output is durable before we commit input offsets (at-least-once)
-                        consumer.commitSync();
+                        try {
+                            consumer.commitSync();
+                        } catch (org.apache.kafka.clients.consumer.RetriableCommitFailedException
+                                 | org.apache.kafka.common.errors.RebalanceInProgressException
+                                 | org.apache.kafka.clients.consumer.CommitFailedException e) {
+                            // A rebalance moved our partitions. Not fatal: the batch is redelivered to the new owner
+                            // and duplicates are absorbed downstream (ON CONFLICT in the ledger).
+                            commitFailures.incrementAndGet();
+                        }
                         stats.mark(txs.size());
                     }
                 } catch (Exception e) {
@@ -141,11 +150,12 @@ final class Enricher {
 
         Map<String, Object> extra = new LinkedHashMap<>();
         extra.put("threads", threads);
+        extra.put("offsetCommitsRejectedByRebalance", commitFailures.get());
         extra.put("cacheHitsDistinctKeys", cacheHits.get());
         extra.put("cacheMissesDistinctKeys", cacheMisses.get());
         long lookups = cacheHits.get() + cacheMisses.get();
         extra.put("cacheHitRatio", lookups == 0 ? 0 : Math.round(cacheHits.get() * 1000.0 / lookups) / 1000.0);
-        stats.writeReport(cfg.resultsDir(), extra);
+        stats.writeReport(extra);
     }
 
     private static Map<String, String> lookup(Jedis j, String prefix, List<String> ids,
@@ -218,6 +228,9 @@ final class Enricher {
         c.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, cfg.integer("max-poll-records", 2000));
         c.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 64 * 1024);
         c.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 50);
+        // Detect a crashed consumer in 10 s instead of Kafka's default 45 s.
+        c.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, cfg.integer("session-timeout-ms", 10_000));
+        c.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 3_000);
         c.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG,
             "org.apache.kafka.clients.consumer.CooperativeStickyAssignor");
         return c;

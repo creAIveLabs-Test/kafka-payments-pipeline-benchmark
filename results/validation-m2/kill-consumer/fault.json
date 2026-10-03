@@ -1,0 +1,1 @@
+{"type": "kill-consumer", "target": "enricher-1 and ledger-1 killed with SIGKILL (no clean shutdown, no offset commit)", "injectedMs": 1790993367544, "atRows": 96021, "restartedAfterSec": "10"}

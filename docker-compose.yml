@@ -20,7 +20,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: 6
       KAFKA_LOG_SEGMENT_DELETE_DELAY_MS: 1000
       KAFKA_FILE_DELETE_DELAY_MS: 1000
-      KAFKA_HEAP_OPTS: "-Xms1g -Xmx1g"
+      KAFKA_HEAP_OPTS: ${KAFKA_HEAP_OPTS:--Xms1g -Xmx1g}
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
       interval: 5s
@@ -45,7 +45,7 @@ services:
       POSTGRES_USER: bench
       POSTGRES_PASSWORD: bench
       POSTGRES_DB: payments
-    command: ["postgres", "-c", "shared_buffers=512MB", "-c", "synchronous_commit=on", "-c", "max_wal_size=256MB", "-c", "min_wal_size=80MB", "-c", "max_connections=100"]
+    command: ["postgres", "-c", "shared_buffers=512MB", "-c", "synchronous_commit=on", "-c", "max_wal_size=256MB", "-c", "min_wal_size=80MB", "-c", "max_connections=200"]
     ports:
       - "5432:5432"
     volumes:

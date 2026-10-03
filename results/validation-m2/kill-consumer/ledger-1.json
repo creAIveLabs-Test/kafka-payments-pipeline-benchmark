@@ -1,0 +1,20 @@
+{
+  "stage" : "ledger",
+  "file" : "ledger-1",
+  "records" : 0,
+  "firstMs" : 0,
+  "lastMs" : 0,
+  "durationMs" : 1,
+  "avgRecordsPerSec" : 0,
+  "peak5sRecordsPerSec" : 0,
+  "threads" : 3,
+  "offsetCommitsRejectedByRebalance" : 0,
+  "rowsInserted" : 0,
+  "duplicatesSkipped" : 0,
+  "rowsInLedgerTable" : 200000,
+  "decisions" : {
+    "APPROVE" : 151455,
+    "DECLINE" : 4097,
+    "REVIEW" : 44448
+  }
+}

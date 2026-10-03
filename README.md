@@ -75,20 +75,39 @@ With one broker, `acks=all` has no replicas to wait for, so it costs nothing her
 5. **Latency depends on running below capacity.** At a steady 20K tx/s (about 60% of capacity), p50 is 159 ms. p99 is 3.5 s, which points to periodic stalls (Kafka Streams cache flushes on commit, Postgres checkpoints, GC on a shared CPU). Investigating it is the obvious next step.
 6. **Peaks above 50K/s per stage happen here** (enricher 71K, scorer 54K, ledger 55K in some runs), but **sustained end-to-end throughput on one laptop is about 34K tx/s.** Sustaining 50K+ end to end needs more hardware: separate broker machines, more consumer instances, Postgres on its own machine.
 
+## Distributed-systems experiments (3-broker cluster)
+
+`scripts/experiments-distributed.sh` runs the pipeline on a **3-broker Kafka cluster** (KRaft, replication factor 3, `min.insync.replicas=2`) and measures:
+
+| Experiment | What it does | What it proves |
+|---|---|---|
+| Horizontal scaling | 1, 2 and 4 processes per stage (`INSTANCES`), 24 partitions | Whether throughput grows when you add consumer instances |
+| Consumer crash | `kill -9` an enricher and a ledger process mid-run, restart them 10 s later | Partitions move to survivors; no rows lost; replayed batches absorbed by `ON CONFLICT` |
+| Broker crash | `docker kill` one of the 3 brokers mid-run, restart it 10 s later | With RF 3 and min ISR 2, writes continue on the remaining brokers; no rows lost |
+| Scale-out | Add one more process to every stage mid-run | Cost of a consumer-group rebalance |
+| Replication cost | LinkedIn's tests: RF 3 with `acks=1` (async) vs `acks=all` (sync), and 3 producers at once | What replication costs in raw Kafka throughput |
+
+Every fault run reports the throughput before the fault, the lowest throughput after it, seconds at zero, how long until throughput recovered, and a data check (rows = N, duplicates absorbed). Every process writes a per-second timeline that survives `kill -9`, so the dip is measured, not estimated.
+
+These runs need more memory than the single-broker runs. The published distributed results come from the Windows workstation described in [docs/WINDOWS.md](docs/WINDOWS.md).
+
 ## More documentation
 
 - [docs/DATA.md](docs/DATA.md): where the data comes from (synthetic, seeded), record format and sizes, skew options
 - [docs/HARDWARE.md](docs/HARDWARE.md): what a 100-byte record means, what machine you need, machine types for production, how to reach 50K+ sustained
+- [docs/WINDOWS.md](docs/WINDOWS.md): running everything on Windows with WSL2 and Docker Desktop
+- [docs/LESSONS.md](docs/LESSONS.md): real problems hit while building this (disk filling up, crashed consumers, rebalance errors) and how they were fixed
 
 ## Run it yourself
 
-Requirements: Docker, Java 17+, about 4 GB free disk.
+Requirements: Docker, Java 17+, Python 3, about 4 GB free disk (10 GB for the cluster experiments). macOS, Linux or Windows via WSL2 ([docs/WINDOWS.md](docs/WINDOWS.md)).
 
 ```bash
 ./mvnw -q package -DskipTests              # builds target/bench.jar
 NAME=my-run N=2000000 ./scripts/run.sh     # one end-to-end run (prints RESULTS.md)
 N=2000000 ./scripts/raw-kafka.sh           # LinkedIn-style raw Kafka test
-./scripts/experiments.sh                   # every run in the table above + results/SUMMARY.md
+./scripts/experiments.sh                   # every single-broker run in the table above + results/SUMMARY.md
+./scripts/experiments-distributed.sh       # 3-broker cluster: scaling, crashes, rebalance, replication cost
 docker compose down -v                     # remove containers and data
 ```
 
@@ -103,9 +122,14 @@ docker compose down -v                     # remove containers and data
 | `GUARANTEE` | at_least_once | scorer: `at_least_once` or `exactly_once_v2` |
 | `WHALE` | 0 | share of traffic from one huge account |
 | `SALT` | 0 | spread the whale account over N keys |
+| `INSTANCES` | 1 | processes per stage (enricher, scorer, ledger) |
+| `CLUSTER` | 0 | 1 = 3 brokers, replication factor 3 |
+| `FAULT` | none | `kill-consumer`, `kill-broker` or `scale-out` |
+| `FAULT_AT` | 0.4 | inject the fault when this share of N is in the ledger |
+| `RESTART_AFTER` | 10 | seconds before a killed process or broker comes back |
 | `KEEP_DATA` | 0 | 1 = keep topics and ledger rows after the run |
 
-The script refuses to start with less than 3 GB of free disk, and deletes each run's topics and ledger rows after saving results.
+The script refuses to start with less than 3 GB of free disk, and deletes each run's topics and ledger rows after saving results. A run ends when the ledger holds all N rows (it writes a `DONE` signal every stage watches); if the ledger stops growing for 3 minutes the run is marked `STALLED` instead of hanging.
 
 ## Reliability design (what keeps 2M = 2M)
 
@@ -114,6 +138,7 @@ The script refuses to start with less than 3 GB of free disk, and deletes each r
 - **Ordering:** keyed by `account_id`, so one account's events stay on one partition and are processed in order by one task.
 - **Producer:** idempotent, `acks=all`.
 - **Consumer rebalancing:** cooperative sticky assignor, so a rebalance only pauses the partitions that move.
+- **Failure detection:** consumer session timeout 10 s (Kafka's default is 45 s), so a crashed consumer's partitions move to a healthy one quickly.
 
 ## Limitations (read before quoting numbers)
 

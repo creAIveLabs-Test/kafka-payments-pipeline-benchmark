@@ -53,7 +53,7 @@ final class Generator {
         p.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, cfg.str("compression", "lz4"));
         p.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 256L * 1024 * 1024);
 
-        Stats stats = new Stats("generator");
+        Stats stats = new Stats("generator", cfg);
         AtomicLongArray perPartition = new AtomicLongArray(partitions);
         AtomicLong errors = new AtomicLong();
         SplittableRandom rnd = new SplittableRandom(42);
@@ -112,6 +112,6 @@ final class Generator {
         extra.put("hottestPartitionVsAverage", avg == 0 ? 0 : Math.round(max / avg * 100) / 100.0);
         extra.put("producer", Map.of("acks", "all", "idempotence", true, "lingerMs", p.get(ProducerConfig.LINGER_MS_CONFIG),
             "batchSize", p.get(ProducerConfig.BATCH_SIZE_CONFIG), "compression", p.get(ProducerConfig.COMPRESSION_TYPE_CONFIG)));
-        stats.writeReport(cfg.resultsDir(), extra);
+        stats.writeReport(extra);
     }
 }

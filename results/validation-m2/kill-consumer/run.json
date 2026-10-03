@@ -1,0 +1,3 @@
+{"transactions": "200000", "partitions": "12", "instancesPerStage": "2", "threadsPerInstance": "3",
+ "scorerGuarantee": "at_least_once", "whaleShare": "0", "saltBuckets": "0", "generatorRate": "0 tx/s (0 = unlimited)",
+ "fault": "kill-consumer", "kafka": "apache/kafka:3.8.0 (KRaft), 3 brokers, replication factor 3, min.insync.replicas 2", "redis": "redis:7-alpine", "postgres": "postgres:16-alpine", "machine": "Apple M2, 8 logical cores, 16 GB RAM, macOS"}

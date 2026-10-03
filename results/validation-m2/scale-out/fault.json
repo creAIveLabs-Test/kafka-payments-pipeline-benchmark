@@ -1,0 +1,1 @@
+{"type": "scale-out", "target": "one more instance of every stage joined mid-run (consumer group rebalance)", "injectedMs": 1790993455065, "atRows": 69948, "restartedAfterSec": "10"}

@@ -53,6 +53,16 @@ public final class Cfg {
         return str("results", "results");
     }
 
+    /** Created by the ledger when every expected row is committed; all stages stop when it exists. */
+    java.io.File doneFile() {
+        return new java.io.File(resultsDir(), "DONE");
+    }
+
+    /** Safety net only: stop if nothing at all happens for this long. */
+    long safetyIdleMs() {
+        return lng("safety-idle-ms", 600_000);
+    }
+
     String jdbcUrl() {
         return str("jdbc", "jdbc:postgresql://localhost:5432/payments?user=bench&password=bench&reWriteBatchedInserts=true");
     }

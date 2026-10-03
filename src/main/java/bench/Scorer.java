@@ -39,7 +39,6 @@ final class Scorer {
 
     static void run(Cfg cfg) throws Exception {
         int threads = cfg.integer("threads", 6);
-        long idleExitMs = cfg.lng("idle-exit-ms", 20_000);
         String guarantee = cfg.str("guarantee", StreamsConfig.AT_LEAST_ONCE);
 
         Properties p = new Properties();
@@ -47,16 +46,18 @@ final class Scorer {
         p.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, cfg.bootstrap());
         p.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, threads);
         p.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, guarantee);
-        p.put(StreamsConfig.STATE_DIR_CONFIG, cfg.resultsDir() + "/state");
+        p.put(StreamsConfig.STATE_DIR_CONFIG, cfg.resultsDir() + "/state-" + cfg.str("instance", "0"));
         p.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, StreamsConfig.EXACTLY_ONCE_V2.equals(guarantee) ? 200 : 1000);
         p.put(StreamsConfig.STATESTORE_CACHE_MAX_BYTES_CONFIG, 64L * 1024 * 1024);
         p.put(StreamsConfig.consumerPrefix(ConsumerConfig.MAX_POLL_RECORDS_CONFIG), 2000);
         p.put(StreamsConfig.consumerPrefix(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG), "earliest");
+        p.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), cfg.integer("session-timeout-ms", 10_000));
+        p.put(StreamsConfig.consumerPrefix(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG), 3_000);
         p.put(StreamsConfig.producerPrefix(ProducerConfig.LINGER_MS_CONFIG), 10);
         p.put(StreamsConfig.producerPrefix(ProducerConfig.BATCH_SIZE_CONFIG), 256 * 1024);
         p.put(StreamsConfig.producerPrefix(ProducerConfig.COMPRESSION_TYPE_CONFIG), "lz4");
 
-        Stats stats = new Stats("scorer");
+        Stats stats = new Stats("scorer", cfg);
         StreamsBuilder b = new StreamsBuilder();
         b.addStateStore(Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(STORE), Serdes.String(), Serdes.ByteArray())
             .withCachingEnabled());
@@ -75,14 +76,15 @@ final class Scorer {
             Thread.sleep(1000);
             KafkaStreams.State st = streams.state();
             if (st == KafkaStreams.State.ERROR || st == KafkaStreams.State.NOT_RUNNING) break;
-            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > idleExitMs) break;
+            if (cfg.doneFile().exists()) break;
+            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > cfg.safetyIdleMs()) break;
         }
         streams.close(Duration.ofSeconds(30));
 
         Map<String, Object> extra = new LinkedHashMap<>();
         extra.put("threads", threads);
         extra.put("processingGuarantee", guarantee);
-        stats.writeReport(cfg.resultsDir(), extra);
+        stats.writeReport(extra);
     }
 
     static final class ScoreProcessor implements FixedKeyProcessor<String, String, String> {

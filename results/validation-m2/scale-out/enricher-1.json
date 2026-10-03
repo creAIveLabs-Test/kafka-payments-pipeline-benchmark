@@ -1,0 +1,15 @@
+{
+  "stage" : "enricher",
+  "file" : "enricher-1",
+  "records" : 99171,
+  "firstMs" : 1790993437858,
+  "lastMs" : 1790993463699,
+  "durationMs" : 25841,
+  "avgRecordsPerSec" : 3838,
+  "peak5sRecordsPerSec" : 7200,
+  "threads" : 3,
+  "offsetCommitsRejectedByRebalance" : 0,
+  "cacheHitsDistinctKeys" : 163683,
+  "cacheMissesDistinctKeys" : 7731,
+  "cacheHitRatio" : 0.955
+}

@@ -43,7 +43,6 @@ final class Ledger {
     static void run(Cfg cfg) throws Exception {
         int threads = cfg.integer("threads", 6);
         long expect = cfg.lng("expect", 2_000_000);
-        long idleExitMs = cfg.lng("idle-exit-ms", 30_000);
         String group = "ledger-" + cfg.runId();
 
         HikariConfig hc = new HikariConfig();
@@ -52,10 +51,33 @@ final class Ledger {
         hc.setAutoCommit(false);
         HikariDataSource ds = new HikariDataSource(hc);
 
-        Stats stats = new Stats("ledger");
+        Stats stats = new Stats("ledger", cfg);
         AtomicLong inserted = new AtomicLong();
         AtomicBoolean running = new AtomicBoolean(true);
+        AtomicLong commitFailures = new AtomicLong();
         stats.startPrinter();
+
+        // Several ledger instances can share the work, so "done" is decided by the table, not by this process's count.
+        Thread monitor = new Thread(() -> {
+            while (running.get()) {
+                try {
+                    Thread.sleep(3000);
+                    try (Connection c = ds.getConnection(); Statement s = c.createStatement();
+                         ResultSet rs = s.executeQuery("SELECT count(*) FROM ledger_entries")) {
+                        rs.next();
+                        if (rs.getLong(1) >= expect) {
+                            cfg.doneFile().createNewFile();
+                            running.set(false);
+                        }
+                        c.commit();
+                    }
+                } catch (Exception e) {
+                    // keep trying; the consumers' own idle check is the fallback
+                }
+            }
+        }, "ledger-done-monitor");
+        monitor.setDaemon(true);
+        monitor.start();
 
         ExecutorService pool = Executors.newFixedThreadPool(threads);
         for (int t = 0; t < threads; t++) {
@@ -69,8 +91,9 @@ final class Ledger {
                     consumer.subscribe(List.of("tx.decisions"));
                     while (running.get()) {
                         ConsumerRecords<String, String> recs = consumer.poll(Duration.ofMillis(200));
+                        if (cfg.doneFile().exists()) running.set(false);
                         if (recs.isEmpty()) {
-                            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > idleExitMs) running.set(false);
+                            if (stats.started() && System.currentTimeMillis() - stats.lastMs() > cfg.safetyIdleMs()) running.set(false);
                             continue;
                         }
                         int n = recs.count();
@@ -103,11 +126,18 @@ final class Ledger {
                         ps.setArray(9, c.createArrayOf("bigint", posted));
                         inserted.addAndGet(ps.executeUpdate());
                         c.commit();                // database first ...
-                        consumer.commitSync();     // ... then offsets
+                        try {
+                            consumer.commitSync();     // ... then offsets
+                        } catch (org.apache.kafka.clients.consumer.RetriableCommitFailedException
+                                 | org.apache.kafka.common.errors.RebalanceInProgressException
+                                 | org.apache.kafka.clients.consumer.CommitFailedException e) {
+                            // A rebalance moved our partitions. Not fatal: the batch is redelivered to the new owner
+                            // and duplicates are absorbed downstream (ON CONFLICT in the ledger).
+                            commitFailures.incrementAndGet();
+                        }
                         long committed = System.currentTimeMillis();
                         for (int k = 0; k < n; k++) stats.recordLatencyMs(committed - created[k]);
                         stats.mark(n);
-                        if (stats.count() >= expect) running.set(false);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -134,10 +164,11 @@ final class Ledger {
 
         Map<String, Object> extra = new LinkedHashMap<>();
         extra.put("threads", threads);
+        extra.put("offsetCommitsRejectedByRebalance", commitFailures.get());
         extra.put("rowsInserted", inserted.get());
         extra.put("duplicatesSkipped", stats.count() - inserted.get());
         extra.put("rowsInLedgerTable", rows);
         extra.put("decisions", decisions);
-        stats.writeReport(cfg.resultsDir(), extra);
+        stats.writeReport(extra);
     }
 }

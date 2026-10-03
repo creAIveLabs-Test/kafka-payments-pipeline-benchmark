@@ -6,6 +6,11 @@ import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -14,34 +19,40 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Per-stage throughput and latency.
- * Throughput is measured from the first to the last record the stage processed,
- * plus the best 5-second window ("peak"). Latency (when recorded) is end-to-end:
- * time from the generator creating a transaction to this stage finishing it.
+ * Per-stage throughput and latency for one process.
+ *
+ * - Throughput: records from the first to the last record this process handled, plus the best 5-second window.
+ * - Timeline: every second "epochMs,cumulativeCount" is appended to <name>-<pid>.timeline.csv and flushed,
+ *   so it survives kill -9 (used to measure dips and recovery during fault injection).
+ * - Latency (when recorded): end-to-end, generator createdMs to this stage finishing the record.
+ *   The full histogram is saved (base64) so reports can merge several instances exactly.
  */
 final class Stats {
     static final ObjectMapper JSON = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     private final String stage;
+    private final String fileName;
+    private final String resultsDir;
     private final AtomicLong count = new AtomicLong();
     private final AtomicLong firstMs = new AtomicLong();
     private volatile long lastMs;
     private final Recorder recorder = new Recorder(3_600_000L, 3);
     private final Histogram latency = new Histogram(3_600_000L, 3);
-    private final ScheduledExecutorService printer = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = new Thread(r, stage() + "-stats");
-        t.setDaemon(true);
-        return t;
-    });
+    private final ScheduledExecutorService scheduler;
+    private FileWriter timeline;
     private long lastPrintedCount;
     private double peakRate;
 
-    Stats(String stage) {
+    Stats(String stage, Cfg cfg) {
         this.stage = stage;
-    }
-
-    private String stage() {
-        return stage;
+        String instance = cfg.str("instance", "");
+        this.fileName = instance.isEmpty() ? stage : stage + "-" + instance;
+        this.resultsDir = cfg.resultsDir();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, fileName + "-stats");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     void mark(long n) {
@@ -68,7 +79,22 @@ final class Stats {
     }
 
     void startPrinter() {
-        printer.scheduleAtFixedRate(() -> {
+        try {
+            new File(resultsDir).mkdirs();
+            long pid = ManagementFactory.getRuntimeMXBean().getPid();
+            timeline = new FileWriter(new File(resultsDir, fileName + "-" + pid + ".timeline.csv"), true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                timeline.write(System.currentTimeMillis() + "," + count.get() + "\n");
+                timeline.flush();
+            } catch (IOException ignored) {
+                // best effort
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> {
             long c = count.get();
             double rate = (c - lastPrintedCount) / 5.0;
             lastPrintedCount = c;
@@ -78,17 +104,18 @@ final class Stats {
                 String lat = latency.getTotalCount() > 0
                     ? String.format(" p50=%dms p99=%dms", latency.getValueAtPercentile(50), latency.getValueAtPercentile(99))
                     : "";
-                System.out.printf("[%s] total=%,d rate=%,.0f/s%s%n", stage, c, rate, lat);
+                System.out.printf("[%s] total=%,d rate=%,.0f/s%s%n", fileName, c, rate, lat);
             }
         }, 5, 5, TimeUnit.SECONDS);
     }
 
-    void writeReport(String resultsDir, Map<String, Object> extra) throws Exception {
-        printer.shutdownNow();
+    void writeReport(Map<String, Object> extra) throws Exception {
+        scheduler.shutdownNow();
         Map<String, Object> r = new LinkedHashMap<>();
         long c = count.get();
         long durationMs = Math.max(1, lastMs - firstMs.get());
         r.put("stage", stage);
+        r.put("file", fileName);
         r.put("records", c);
         r.put("firstMs", firstMs.get());
         r.put("lastMs", lastMs);
@@ -104,12 +131,19 @@ final class Stats {
                 l.put("p99", latency.getValueAtPercentile(99));
                 l.put("max", latency.getMaxValue());
                 r.put("endToEndLatencyMs", l);
+                ByteBuffer buf = ByteBuffer.allocate(latency.getNeededByteBufferCapacity());
+                int len = latency.encodeIntoCompressedByteBuffer(buf);
+                byte[] bytes = new byte[len];
+                buf.flip();
+                buf.get(bytes);
+                r.put("latencyHistogram", Base64.getEncoder().encodeToString(bytes));
             }
         }
         if (extra != null) r.putAll(extra);
         File dir = new File(resultsDir);
         dir.mkdirs();
-        JSON.writeValue(new File(dir, stage + ".json"), r);
-        System.out.printf("[%s] done: %,d records in %,d ms = %,d records/s%n", stage, c, durationMs, r.get("avgRecordsPerSec"));
+        JSON.writeValue(new File(dir, fileName + ".json"), r);
+        if (timeline != null) timeline.close();
+        System.out.printf("[%s] done: %,d records in %,d ms = %,d records/s%n", fileName, c, durationMs, r.get("avgRecordsPerSec"));
     }
 }
