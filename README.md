@@ -75,6 +75,11 @@ With one broker, `acks=all` has no replicas to wait for, so it costs nothing her
 5. **Latency depends on running below capacity.** At a steady 20K tx/s (about 60% of capacity), p50 is 159 ms. p99 is 3.5 s, which points to periodic stalls (Kafka Streams cache flushes on commit, Postgres checkpoints, GC on a shared CPU). Investigating it is the obvious next step.
 6. **Peaks above 50K/s per stage happen here** (enricher 71K, scorer 54K, ledger 55K in some runs), but **sustained end-to-end throughput on one laptop is about 34K tx/s.** Sustaining 50K+ end to end needs more hardware: separate broker machines, more consumer instances, Postgres on its own machine.
 
+## More documentation
+
+- [docs/DATA.md](docs/DATA.md): where the data comes from (synthetic, seeded), record format and sizes, skew options
+- [docs/HARDWARE.md](docs/HARDWARE.md): what a 100-byte record means, what machine you need, machine types for production, how to reach 50K+ sustained
+
 ## Run it yourself
 
 Requirements: Docker, Java 17+, about 4 GB free disk.
