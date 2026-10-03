@@ -47,4 +47,4 @@ Record sizes as JSON: about **180 bytes** in `transactions`, about **360 bytes**
 
 ## Scaling the data
 
-The size is a parameter: `N=2000000` for 2 million; use `N=10000000` for 10 million. Disk use grows with N (about 0.7 GB of Kafka data per million transactions across the three topics before cleanup), so check free space first.
+The size is a parameter: `N=2000000` for 2 million; use `N=10000000` for 10 million. Disk use grows with N (a 2M run used roughly 1 GB of Kafka data across the three topics, plus Postgres, before cleanup), so check free space first.
