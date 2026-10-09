@@ -46,6 +46,15 @@ all 24.4M rows. Data is deleted after each run.
 2. **Rules vs label:** flagged = DECLINE or REVIEW. Recall = share of labelled fraud flagged; precision = share of
    flagged rows that are labelled fraud, with a breakdown per rule.
 
-The rules in `Scorer.java` were written for the synthetic generator, not tuned on this data. On the first 100K rows
-(Mac M2 test run) they flagged 67 rows and caught none of the 126 labelled frauds. That is the baseline a learned
-model would have to beat.
+## Results (Windows i7, 1 broker, same settings as the synthetic baseline)
+
+| Rows | Cards | End-to-end tx/sec | Ledger rows | Missing | Duplicates | Fraud caught (recall) | Precision |
+|---|---|---|---|---|---|---|---|
+| 1,000 | 1 | 703 | 1,000 | 0 | 0 | no fraud in these rows | - |
+| 100,000 | 21 | 16,116 | 100,000 | 0 | 0 | 0 of 126 (0.0%) | 0.0% |
+| 2,000,000 | 493 | 55,417 | 2,000,000 | 0 | 0 | 8 of 2,224 (0.4%) | 3.6% |
+| **24,386,900 (all)** | 6,139 | **66,847** | 24,386,900 | 0 | 0 | **62 of 29,757 (0.2%)** | **1.8%** |
+
+Small runs are slow because few cards means few busy partitions (1,000 rows = one card = one partition).
+The rules in `Scorer.java` were written for the synthetic generator, not tuned on this data: that 0.2% recall is
+the baseline a learned model would have to beat. Per-run files: `results/ibm-tabformer/runs/ibm-*/RESULTS.md` and `FRAUD.md`.

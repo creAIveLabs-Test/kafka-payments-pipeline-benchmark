@@ -90,6 +90,24 @@ Same method as LinkedIn's 2014 benchmark ([Jay Kreps, "Benchmarking Apache Kafka
 
 This is not a like-for-like comparison: LinkedIn used 2014 hardware and real networks between machines, while here all brokers share one laptop and replicate over localhost, so `acks=all` costs almost nothing. It shows the order of magnitude Kafka itself handles, not a record.
 
+### Public labelled data: IBM TabFormer replay (Windows i7)
+
+The same pipeline, fed IBM's public [TabFormer](https://github.com/IBM/TabFormer) credit-card file instead of the generator: 24,386,900 transactions from 2,000 simulated US cardholders, 29,757 labelled fraud. The label is never sent to the pipeline; after each run `scripts/ibm_eval.py` matches every source row to the ledger by id and scores the decisions against it. Details: [docs/IBM.md](docs/IBM.md), results in [`results/ibm-tabformer/`](results/ibm-tabformer).
+
+| Rows replayed (first N of the file) | Cards | End-to-end tx/sec | Enricher / Scorer / Ledger avg | In the ledger | Missing | Duplicates |
+|---|---|---|---|---|---|---|
+| 2,000,000 | 493 | **55,417** | 74,330 / 73,212 / 57,074 | 2,000,000 | 0 | 0 |
+| **all 24,386,900** | 6,139 | **66,847** | 91,701 / 91,520 / 67,068 | 24,386,900 | 0 | 0 |
+
+The full file ran for 364.8 s; it is faster than the 2M run because the stages spend longer at full speed after warm-up. Latency in these runs is backlog (generator unthrottled), as above.
+
+| Rules vs the fraud label, all 24,386,900 rows | Labelled fraud | Labelled not fraud |
+|---|---|---|
+| Flagged (DECLINE or REVIEW) | 62 | 3,344 |
+| Approved | 29,695 | 24,353,799 |
+
+**Recall 0.2%, precision 1.8%.** The four rules were written for the synthetic generator, not tuned on this data, and the file has no account tier or risk flag (those two inputs stay generated). The pipeline is reliable; the rules are not a fraud model. This is the baseline a learned model has to beat.
+
 ## What the results show
 
 1. **Kafka is not the bottleneck; the work per record is.** Raw Kafka moves about 800K-935K records/s on these laptops; the full pipeline (JSON parsing, Redis lookups, RocksDB state, Postgres writes) does 34K-57K transactions/s.
@@ -102,6 +120,8 @@ This is not a like-for-like comparison: LinkedIn used 2014 hardware and real net
 8. **Failures cost seconds, never data.** Killing consumers or a broker mid-run stopped writes for 1-7 s and recovered in 8-10 s, with every one of the 2M transactions in the ledger exactly once. A rebalance replayed 15,306 records; `ON CONFLICT (tx_id) DO NOTHING` absorbed all of them.
 9. **Replication factor 3 costs about a third of throughput on one machine** (56.6K with 1 broker vs 37.9K with 3 brokers): every write is stored three times on the same disk and CPU. In return a broker crash costs 8 seconds, not data.
 10. **Adding instances on one machine cut latency but not throughput.** Going from 1 to 4 instances per stage lowered p50 from 22.9 s to 5.0 s (more consumers drain the backlog in parallel) but throughput fell from 37.9K to 26.0K, because 4 x 3 stages x 6 threads plus 3 brokers compete for 12 cores and one Postgres. Horizontal scaling needs more machines, not more processes on one.
+11. **The results hold on public data.** IBM TabFormer ran at 55,417 tx/s for 2M rows (synthetic: 56,638) and 66,847 tx/s over all 24.4M rows, with every source row in the ledger exactly once, matched by id. The ledger was again the slowest stage.
+12. **Hand-written rules catch almost no labelled fraud** (0.2% recall, 1.8% precision on 24.4M rows). Throughput and correctness are measured; detection quality is the next problem.
 
 ## More documentation
 
