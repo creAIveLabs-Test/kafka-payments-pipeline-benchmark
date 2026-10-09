@@ -107,7 +107,8 @@ final class Scorer {
         public void process(FixedKeyRecord<String, String> rec) {
             try {
                 ObjectNode tx = (ObjectNode) JSON.readTree(rec.value());
-                long ts = tx.get("createdMs").asLong();
+                // Replayed data carries its original time; velocity must use it, not the replay clock.
+                long ts = tx.has("eventMs") ? tx.get("eventMs").asLong() : tx.get("createdMs").asLong();
                 long[] kept = window(store.get(rec.key()), ts);
                 store.put(rec.key(), encode(kept));
                 int velocity = kept.length;

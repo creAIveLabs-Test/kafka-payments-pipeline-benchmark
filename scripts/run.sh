@@ -4,6 +4,7 @@
 #   NAME=baseline N=2000000 ./scripts/run.sh
 #   NAME=cluster CLUSTER=1 INSTANCES=2 ./scripts/run.sh
 #   NAME=kill-broker CLUSTER=1 INSTANCES=2 FAULT=kill-broker ./scripts/run.sh
+#   NAME=ibm-1000 N=1000 SOURCE=ibm IBM_CSV=/path/card_transaction.v1.csv ./scripts/run.sh   (see scripts/run-ibm.sh)
 #
 # Settings (environment variables):
 #   N            transactions (default 2000000)
@@ -19,6 +20,8 @@
 #   RESTART_AFTER seconds before a killed process/broker is restarted (default 10)
 #   KEEP_DATA    1 = keep topics and ledger rows after the run (default 0)
 #   MIN_FREE_GB  refuse to start below this much free disk (default 3)
+#   SOURCE       synthetic | ibm (default synthetic); ibm replays the first N rows of IBM_CSV
+#   RESULTS_ROOT where runs and summary.jsonl go (default results)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -36,8 +39,11 @@ FAULT=${FAULT:-none}
 FAULT_AT=${FAULT_AT:-0.4}
 RESTART_AFTER=${RESTART_AFTER:-10}
 JAVA_OPTS=${JAVA_OPTS:--Xms512m -Xmx1g}
+SOURCE=${SOURCE:-synthetic}
+IBM_CSV=${IBM_CSV:-}
+RESULTS_ROOT=${RESULTS_ROOT:-results}
 RUN_ID="$NAME-$(date +%s)"
-OUT="results/runs/$NAME"
+OUT="$RESULTS_ROOT/runs/$NAME"
 JAR=target/bench.jar
 
 if [ "$CLUSTER" = "1" ]; then
@@ -65,6 +71,10 @@ machine() {
 }
 
 [ -f "$JAR" ] || ./mvnw -q -B package -DskipTests
+if [ "$SOURCE" = "ibm" ] && [ ! -r "$IBM_CSV" ]; then
+  echo "SOURCE=ibm needs IBM_CSV=/path/to/card_transaction.v1.csv (got '$IBM_CSV')" >&2
+  exit 1
+fi
 
 FREE_GB=$(df -Pk "$HOME" | awk 'NR==2 {printf "%d", $4/1048576}')
 if [ "${FREE_GB:-0}" -lt "${MIN_FREE_GB:-3}" ]; then
@@ -84,10 +94,10 @@ done
 rm -rf "$OUT" && mkdir -p "$OUT"
 
 echo "== seeding Postgres and warming Redis"
-java $JAVA_OPTS -jar $JAR seed --results="$OUT" | tee "$OUT/seed.log"
+java $JAVA_OPTS -jar $JAR seed --results="$OUT" --source="$SOURCE" --csv="$IBM_CSV" --count="$N" | tee "$OUT/seed.log"
 
 cat > "$OUT/run.json" <<JSON
-{"transactions": "$N", "partitions": "$PARTITIONS", "instancesPerStage": "$INSTANCES", "threadsPerInstance": "$THREADS",
+{"transactions": "$N", "source": "$SOURCE", "partitions": "$PARTITIONS", "instancesPerStage": "$INSTANCES", "threadsPerInstance": "$THREADS",
  "scorerGuarantee": "$GUARANTEE", "whaleShare": "$WHALE", "saltBuckets": "$SALT", "generatorRate": "${RATE} tx/s (0 = unlimited)",
  "fault": "$FAULT", "kafka": "$KAFKA_DESC", "redis": "redis:7-alpine", "postgres": "postgres:16-alpine", "machine": "$(machine)"}
 JSON
@@ -152,8 +162,13 @@ INJECTOR=""
 if [ "$FAULT" != "none" ]; then inject_fault & INJECTOR=$!; fi
 
 echo "== producing $N transactions"
-java $JAVA_OPTS -jar $JAR generate --results="$OUT" --count="$N" --partitions="$PARTITIONS" --bootstrap="$BOOT" \
-  --whale-share="$WHALE" --salt-buckets="$SALT" --rate="$RATE" | tee "$OUT/generator.log"
+if [ "$SOURCE" = "ibm" ]; then
+  java $JAVA_OPTS -jar $JAR replay --results="$OUT" --csv="$IBM_CSV" --count="$N" --partitions="$PARTITIONS" --bootstrap="$BOOT" \
+    --rate="$RATE" | tee "$OUT/generator.log"
+else
+  java $JAVA_OPTS -jar $JAR generate --results="$OUT" --count="$N" --partitions="$PARTITIONS" --bootstrap="$BOOT" \
+    --whale-share="$WHALE" --salt-buckets="$SALT" --rate="$RATE" | tee "$OUT/generator.log"
+fi
 
 [ -n "$INJECTOR" ] && wait "$INJECTOR" || true
 echo "== waiting for every stage to finish (the ledger writes DONE at $N rows; every stage stops on DONE)"
@@ -172,8 +187,10 @@ while :; do
   sleep 2
 done
 
-java -jar $JAR report --dir="$OUT" --name="$NAME" --results=results > /dev/null
+java -jar $JAR report --dir="$OUT" --name="$NAME" --results="$RESULTS_ROOT" > /dev/null
 cat "$OUT/RESULTS.md"
+# Source-vs-ledger reconciliation and fraud-label scoring, before the ledger is cleaned up.
+[ "$SOURCE" = "ibm" ] && python3 scripts/ibm_eval.py "$IBM_CSV" "$N" "$OUT" || true
 
 # Clean up this run's data (results are already saved) so disk use stays flat across runs.
 if [ "${KEEP_DATA:-0}" != "1" ]; then

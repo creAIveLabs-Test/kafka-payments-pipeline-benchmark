@@ -108,6 +108,7 @@ This is not a like-for-like comparison: LinkedIn used 2014 hardware and real net
 - [docs/DATA.md](docs/DATA.md): where the data comes from (synthetic, seeded), record format and sizes, skew options
 - [docs/HARDWARE.md](docs/HARDWARE.md): what a 100-byte record means, what machine you need, machine types for production, how to reach 50K+ sustained
 - [docs/WINDOWS.md](docs/WINDOWS.md): running everything on Windows with WSL2 and Docker Desktop
+- [docs/IBM.md](docs/IBM.md): replaying the public IBM TabFormer credit-card dataset (24.4M labelled rows) and checking the rules against its fraud labels
 - [docs/LESSONS.md](docs/LESSONS.md): real problems hit while building this (disk filling up, crashed consumers, rebalance errors) and how they were fixed
 
 ## Run it yourself
@@ -118,6 +119,7 @@ Requirements: Docker, Java 17+, Python 3, about 4 GB free disk (10 GB for the cl
 ./mvnw -q package -DskipTests              # builds target/bench.jar
 NAME=my-run N=2000000 ./scripts/run.sh     # one end-to-end run (prints RESULTS.md)
 N=2000000 ./scripts/raw-kafka.sh           # LinkedIn-style raw Kafka test
+IBM_CSV=/path/card_transaction.v1.csv ./scripts/run-ibm.sh   # replay the public IBM TabFormer dataset (docs/IBM.md)
 ./scripts/experiments.sh                   # every single-broker run in the table above + results/SUMMARY.md
 ./scripts/experiments-distributed.sh       # 3-broker cluster: scaling, crashes, rebalance, replication cost
 docker compose down -v                     # remove containers and data
