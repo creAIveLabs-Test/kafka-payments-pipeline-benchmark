@@ -1,0 +1,25 @@
+{
+  "stage" : "ledger",
+  "file" : "ledger-1",
+  "records" : 1000,
+  "firstMs" : 1791566607369,
+  "lastMs" : 1791566607583,
+  "durationMs" : 214,
+  "avgRecordsPerSec" : 4673,
+  "peak5sRecordsPerSec" : 0,
+  "endToEndLatencyMs" : {
+    "p50" : 690,
+    "p95" : 718,
+    "p99" : 722,
+    "max" : 880
+  },
+  "latencyHistogram" : "HISTFAAAAHF4nJNpmSzMwMAQwgABzFCaEUyavWuw/wAReMrJwcXFxqLKwsLHx8cjICCnJiMgICSjIicjJSMhBBSTk5EzsNCSEhERkOFTMzDyM9NRcrOxMHJxkOIREGEDKhIREBMR42BgERISERIS4tjOxAQAYF0ODg==",
+  "threads" : 6,
+  "offsetCommitsRejectedByRebalance" : 0,
+  "rowsInserted" : 1000,
+  "duplicatesSkipped" : 0,
+  "rowsInLedgerTable" : 1000,
+  "decisions" : {
+    "APPROVE" : 1000
+  }
+}

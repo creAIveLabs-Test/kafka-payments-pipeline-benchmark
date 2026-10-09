@@ -1,0 +1,24 @@
+{
+ "sourceRows": 1000,
+ "ledgerRowsForSource": 1000,
+ "missing": 0,
+ "unexpectedLedgerRows": 0,
+ "refunds": 33,
+ "issuerErrors": 24,
+ "issuerErrorTypes": {
+  "Insufficient Balance": 16,
+  "Bad PIN": 4,
+  "Technical Glitch": 3,
+  "Bad PIN,Insufficient Balance": 1
+ },
+ "fraudLabelled": 0,
+ "flagged": 0,
+ "truePositive": 0,
+ "falsePositive": 0,
+ "falseNegative": 0,
+ "trueNegative": 1000,
+ "precision": 0.0,
+ "recall": 0.0,
+ "flaggedByRule": {},
+ "fraudCaughtByRule": {}
+}

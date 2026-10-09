@@ -1,0 +1,35 @@
+{
+ "sourceRows": 100000,
+ "ledgerRowsForSource": 100000,
+ "missing": 0,
+ "unexpectedLedgerRows": 0,
+ "refunds": 2581,
+ "issuerErrors": 1707,
+ "issuerErrorTypes": {
+  "Insufficient Balance": 974,
+  "Bad PIN": 238,
+  "Technical Glitch": 202,
+  "Bad Card Number": 98,
+  "Bad Expiration": 97,
+  "Bad CVV": 87,
+  "Bad PIN,Insufficient Balance": 3,
+  "Insufficient Balance,Technical Glitch": 3,
+  "Bad PIN,Technical Glitch": 2,
+  "Bad Zipcode": 1,
+  "Bad Card Number,Insufficient Balance": 1,
+  "Bad Card Number,Bad CVV": 1
+ },
+ "fraudLabelled": 126,
+ "flagged": 67,
+ "truePositive": 0,
+ "falsePositive": 67,
+ "falseNegative": 126,
+ "trueNegative": 99807,
+ "precision": 0.0,
+ "recall": 0.0,
+ "flaggedByRule": {
+  "high_amount_basic_tier": 66,
+  "cross_border_high_amount": 1
+ },
+ "fraudCaughtByRule": {}
+}

@@ -1,0 +1,51 @@
+{
+ "sourceRows": 24386900,
+ "ledgerRowsForSource": 24386900,
+ "missing": 0,
+ "unexpectedLedgerRows": 0,
+ "refunds": 1244689,
+ "issuerErrors": 388431,
+ "issuerErrorTypes": {
+  "Insufficient Balance": 242783,
+  "Bad PIN": 58918,
+  "Technical Glitch": 48157,
+  "Bad Card Number": 13321,
+  "Bad CVV": 10740,
+  "Bad Expiration": 10716,
+  "Bad Zipcode": 2079,
+  "Bad PIN,Insufficient Balance": 581,
+  "Insufficient Balance,Technical Glitch": 457,
+  "Bad PIN,Technical Glitch": 128,
+  "Bad Card Number,Insufficient Balance": 122,
+  "Bad CVV,Insufficient Balance": 89,
+  "Bad Expiration,Insufficient Balance": 78,
+  "Bad Card Number,Bad CVV": 60,
+  "Bad Card Number,Bad Expiration": 54,
+  "Bad Expiration,Bad CVV": 47,
+  "Bad Expiration,Technical Glitch": 32,
+  "Bad Card Number,Technical Glitch": 25,
+  "Bad CVV,Technical Glitch": 21,
+  "Bad Zipcode,Insufficient Balance": 13,
+  "Bad Zipcode,Technical Glitch": 7,
+  "Bad Card Number,Bad Expiration,Insufficient Balance": 2,
+  "Bad Card Number,Bad Expiration,Technical Glitch": 1
+ },
+ "fraudLabelled": 29757,
+ "flagged": 3406,
+ "truePositive": 62,
+ "falsePositive": 3344,
+ "falseNegative": 29695,
+ "trueNegative": 24353799,
+ "precision": 0.0182,
+ "recall": 0.0021,
+ "flaggedByRule": {
+  "risk_account_gambling": 1776,
+  "high_amount_basic_tier": 1612,
+  "cross_border_high_amount": 18
+ },
+ "fraudCaughtByRule": {
+  "high_amount_basic_tier": 51,
+  "risk_account_gambling": 6,
+  "cross_border_high_amount": 5
+ }
+}

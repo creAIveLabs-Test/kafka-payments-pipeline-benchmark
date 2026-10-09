@@ -1,0 +1,26 @@
+{
+  "stage" : "ledger",
+  "file" : "ledger-1",
+  "records" : 100000,
+  "firstMs" : 1791566645099,
+  "lastMs" : 1791566650268,
+  "durationMs" : 5169,
+  "avgRecordsPerSec" : 19346,
+  "peak5sRecordsPerSec" : 13049,
+  "endToEndLatencyMs" : {
+    "p50" : 1409,
+    "p95" : 2619,
+    "p99" : 2873,
+    "max" : 2913
+  },
+  "latencyHistogram" : "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",
+  "threads" : 6,
+  "offsetCommitsRejectedByRebalance" : 0,
+  "rowsInserted" : 100000,
+  "duplicatesSkipped" : 0,
+  "rowsInLedgerTable" : 100000,
+  "decisions" : {
+    "APPROVE" : 99933,
+    "REVIEW" : 67
+  }
+}

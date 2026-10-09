@@ -1,0 +1,23 @@
+{
+  "stage" : "generator",
+  "file" : "generator",
+  "records" : 24386900,
+  "firstMs" : 1791566849124,
+  "lastMs" : 1791567115164,
+  "durationMs" : 266040,
+  "avgRecordsPerSec" : 91666,
+  "peak5sRecordsPerSec" : 113467,
+  "startMs" : 1791566848441,
+  "source" : "IBM TabFormer card_transaction.v1.csv",
+  "rowsRead" : 24386900,
+  "errors" : 0,
+  "recordsPerPartition" : [ 2167574, 1944436, 2126376, 1971009, 1808071, 1780035, 2205035, 2122929, 1993080, 1942011, 2135528, 2190816 ],
+  "hottestPartitionVsAverage" : 1.09,
+  "producer" : {
+    "lingerMs" : 10,
+    "batchSize" : 262144,
+    "idempotence" : true,
+    "compression" : "lz4",
+    "acks" : "all"
+  }
+}
