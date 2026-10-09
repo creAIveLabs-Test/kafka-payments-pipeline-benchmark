@@ -1,0 +1,27 @@
+{
+  "stage" : "ledger",
+  "file" : "ledger-3",
+  "records" : 179255,
+  "firstMs" : 1791491710705,
+  "lastMs" : 1791491716045,
+  "durationMs" : 5340,
+  "avgRecordsPerSec" : 33568,
+  "peak5sRecordsPerSec" : 22880,
+  "endToEndLatencyMs" : {
+    "p50" : 15759,
+    "p95" : 18607,
+    "p99" : 19071,
+    "max" : 19839
+  },
+  "latencyHistogram" : "HISTFAAABKJ4nC1Ub4TieRjv+fP9/ZvZfbF3r865V/vm7sW9uBfjjOXWOuOsta/WWmetsdY666x11rgX9yJJkpH8LkkykowkSZJ0ychIxkgyMpL8JKNLkpGMJPfM7sX3V56nb8/z+dfX3r+/cLnUP67PL/r/HT49d2bun+afC//uvX6188tBAHa/QQrDwfMOVCEC718V4Rz2a+AHG4ZQh7iUi7CACrwOw869tzY0oYZJePT9ex/GKYbXkMYWurmMl+ilPPYpgxkqUZJSbPNaOlE6xjEUYIN9TqLNQbzGGh3hHDzQxhKuMQgjfHawgSMsQBL2FvB4NwS/7b3Zt6GLH9rw61MH4piW/gyiGMQBJGkIMTiDxzbeQAbzEIU2+OACHPmBEEwhJVv/EYW3aanE4J7a++q+68V9dffRd/Tl7xvw0BW2MUIDqMHOz66Pf708xDI24ErQOzIlgHHwowOHMm2FSerR+/2iAI+zhwM8oDUNlZsEFccwqrxaW620iXaifPpStVRQhVRJW3BfNThGM0qrqQqoitqorJwp9dSUa9pIvzASel0fKodDWpfbPFV+VdWGWlSLaGXVVHm65iaXOcxNKlMFs1jDLkXYp2rqiK/JSz2sY1Wea+yhmxrCvC3Md4XbyG0HPozhZZRs6abIz1cY5RENaMwDjnJaZXmg6lperTjER9TCKh/TDfooQm5O4Ak0RNs4nsqnLiSE1Ap2IScz3LLDKZ1jluoUx7FsdSLVodRXcvsYJuinAJ/DGlZwcHvVh08vRBA/vHh3sJByHgdilhlWKCHUdtDBiAyaoU1LWEJfzPLgnQM/nMMAdv8sQJACgs5LU7zBJXYwL+pPhEW/6qo59VVZOFrhhPJQJA+WqUGHNBJjFMWPFcpQRLXoilPs5R4XuC0ce7SYntJi6liLc5a9yqtq3BM0aSxgEW7ARwnhZIobwenQBkcwpxFdqg3ZXJElTyEs7h2KjxwMsCMKRChMKdkvgU2xoFt4kA3l5OTMRZOl9BxIYEr2Fy4kJUXyC/yZfDOJXan1ISfZKEo2qpzhKTmy7Q3dKD83IEwhqlAQ59IPahPuSs+BPqVogiFx8SV0YIYZCWxHyF7QpQQn8yknazoVVWoUoL6ossY0n2D/E48TKKEH3ZjHJIZF43cPbXF/XRLWwlNIYZAOISLnGmYSorIgGGFDUt6SSWNxnFd39Gutbxa2E1bHihon6pwPdY+kYKK1jFt+h2qmneslLSE5SKs5t8XVXtExI77o4QWdievEQVpV9yk/1bmkBrwWNRd6zjq03GZTc7ise8yBHle2qDfSHLXUo1vFrZHVNdumx7StnDEyKlZuq3endvd0u2GOzZy1MKJW2DrTm2ZqKygZ82zPrZTlN3tmwpIb1sxIWhM9Ireb1trw6wO1MZLmXOurLg25gznRpUp5rhgJraRSekQvaFdG3CxZY2tlFe/Y28dbpa2sVTOOBGOGq9pSnRlV89goGh39RNy1oJU4JUxjycWFYJzSbbKS4twUejEqds/KP1pfUm2zwxP2aklqigcS4LqAN1541pfIhcArkXnw7dO7T1wPgvDj7pPnc/i4/x8B1yNM",
+  "threads" : 4,
+  "offsetCommitsRejectedByRebalance" : 5,
+  "rowsInserted" : 169068,
+  "duplicatesSkipped" : 10187,
+  "rowsInLedgerTable" : 2000000,
+  "decisions" : {
+    "APPROVE" : 1399282,
+    "DECLINE" : 191397,
+    "REVIEW" : 409321
+  }
+}

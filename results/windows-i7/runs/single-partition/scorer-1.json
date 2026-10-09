@@ -1,0 +1,12 @@
+{
+  "stage" : "scorer",
+  "file" : "scorer-1",
+  "records" : 2000000,
+  "firstMs" : 1791489500118,
+  "lastMs" : 1791489549024,
+  "durationMs" : 48906,
+  "avgRecordsPerSec" : 40895,
+  "peak5sRecordsPerSec" : 45632,
+  "threads" : 6,
+  "processingGuarantee" : "at_least_once"
+}

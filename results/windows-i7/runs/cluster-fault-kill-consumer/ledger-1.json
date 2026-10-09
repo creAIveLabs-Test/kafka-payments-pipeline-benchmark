@@ -1,0 +1,27 @@
+{
+  "stage" : "ledger",
+  "file" : "ledger-1",
+  "records" : 413773,
+  "firstMs" : 1791491505317,
+  "lastMs" : 1791491512360,
+  "durationMs" : 7043,
+  "avgRecordsPerSec" : 58750,
+  "peak5sRecordsPerSec" : 43755,
+  "endToEndLatencyMs" : {
+    "p50" : 24559,
+    "p95" : 27263,
+    "p99" : 29183,
+    "max" : 31007
+  },
+  "latencyHistogram" : "HISTFAAABFB4nC2Tb4TieRzH+/75/fv+/tTvT/3q1zSzd8Y8WGuts9Ya5+6MfbD2wTp7rLPOWPfgrHXGOWsfniRJknQjGclIMpIxkoz8jIwxspIkYyRJRpeMJBlJ1uX2Ph/v95sPL+9HnzX/36rFgpOWL4P+T/CfPxl7v598OfzzE/7xxS9bWx93tG/fFsEAzUAJTOAUJuA19KIe6sIcHAI/PIVheAmeWliLsQBl2AZNkIEdeEbN4Ah5cYxu0X3mBC3hFA2RH/epQ5zFQZzDfibCDPCcPmcbpEDS7JKJcWW2z/v4z0yETzMFukufEi8XY4+YBe1lWswtKqIWGqEWU8URXMSf6BE6RQkUwnmcoSK4yc2EifRZKJE0KZIk12Y77DU1pjOoRReZLHWIpmiBTVJifbyftPgROyBpYV+YkiJ/RZLCWDzm5/yc67BBwSdkuSopkwXJkAZ7wXT5qtjmF9wlW+Cy7JK0+aVwK8yEEt+SKsKpWBZHwlTKCiZfJVVSJ8f8AcnyFa7GRpkmG+R6q844H+BSxCvU+So/YyIrts6b4oVtbs0IESEgjuRLMaslXUtHxVW0551540I/1gL6UJvZh/aAElJijhPHodOvn2hhderoKgvFp/bVoXbmarnSxtQ9NCaGVy/oJb1t3BkpPev0uS++unXH3SHPeKO4VjLyG8cbVU9+PbCR+jq6PnTfeXKesqthLJ1VveuIrjU9/bW4MVHK+tJ+YztUk1pJ6aoZNWqv6S1HVx8ZY1dTmzvSzjPj2tl0n2o1vbIe3wiuTVwZd8d95a47M/aic2AfaFVP1lM0qvacnFH7Wl29dbWdZefANTU+u8N6SLlQh2rB0ZPP1JScsVVs57JpDzuLtpxaVXq2fa2lRuSKUrKbjoLd1KJaTR2r+3LXFpLrakvMymUl5IhrR8rEOpeCtrlStO5LJbFk61mrcos3JVM5VbzWrBJZUZfCQPzER/gjaSKGxLYYE0Zi1dYQc1KbTwpFqSOeCCExYvVKN/xA6gsRtS6bakJe2q7UK8eNFpFNOWNNSAtpxJXEKd/mL0mNC5LhSjEuyjboW7SkEkyNTnJp1iQnZMH0mACf526YMB7jLJWixpSXNlEPH1Ad7MUmdUQ1qQo+xHNwg8JUDvuoG9SkFvBs9SfnlJ8O4CmYwRg8RmmUALfIRHfgw4caiKNrWIIZGMJ9FEJT2KZSdJIKIx8+QknYgAVYB793wAFY34vCHsyvNg1M0AAD2IefYAxdoQxKgud75yAGlACIg3fvA+DNh+gKOQDGkzdkk+xJjyBreYIEy+6DH07gIfDC3e0EeGV8fEwebv5xAe5v7rxOgtQKSIF3ITAGA/CYtnyHMDEsr59vvt0SHyt7D9Aj1gt+282C9y+XIAz9MArz4Ffp6TGIwTKQdtlNC0TbOy+dr3a2vvlz51EQ2Iy/tn+mLfcfPrhnCQDB8iYJ5yAJnyE/eHFv24meU8/+BYhouFw=",
+  "threads" : 4,
+  "offsetCommitsRejectedByRebalance" : 0,
+  "rowsInserted" : 413773,
+  "duplicatesSkipped" : 0,
+  "rowsInLedgerTable" : 2000000,
+  "decisions" : {
+    "APPROVE" : 1399282,
+    "DECLINE" : 191397,
+    "REVIEW" : 409321
+  }
+}

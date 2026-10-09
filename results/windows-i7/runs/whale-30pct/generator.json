@@ -1,0 +1,23 @@
+{
+  "stage" : "generator",
+  "file" : "generator",
+  "records" : 2000000,
+  "firstMs" : 1791489611340,
+  "lastMs" : 1791489633077,
+  "durationMs" : 21737,
+  "avgRecordsPerSec" : 92009,
+  "peak5sRecordsPerSec" : 128495,
+  "startMs" : 1791489610800,
+  "errors" : 0,
+  "whaleShare" : 0.3,
+  "saltBuckets" : 0,
+  "recordsPerPartition" : [ 115796, 115354, 115128, 115799, 118414, 114994, 112557, 114339, 717176, 117537, 119060, 123846 ],
+  "hottestPartitionVsAverage" : 4.3,
+  "producer" : {
+    "idempotence" : true,
+    "batchSize" : 262144,
+    "lingerMs" : 10,
+    "acks" : "all",
+    "compression" : "lz4"
+  }
+}

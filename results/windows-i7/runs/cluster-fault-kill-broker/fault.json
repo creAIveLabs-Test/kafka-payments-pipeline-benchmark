@@ -1,0 +1,1 @@
+{"type": "kill-broker", "target": "broker kafka-2 killed (docker kill); 2 of 3 replicas left, min.insync.replicas 2", "injectedMs": 1791491588479, "atRows": 844601, "restartedAfterSec": "10"}

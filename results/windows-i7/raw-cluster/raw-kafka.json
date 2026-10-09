@@ -1,0 +1,37 @@
+{
+  "recordSizeBytes": 100,
+  "recordsPerProducer": 2000000,
+  "brokers": 3,
+  "replicationFactor": 3,
+  "tests": [
+    {
+      "name": "consumer_6p",
+      "recordsPerSec": 798722,
+      "mbPerSec": 76.1721
+    },
+    {
+      "name": "producer_rf3_acks1_async_replication",
+      "producers": 1,
+      "recordsPerSec": 790826,
+      "mbPerSec": 75.4,
+      "avgLatencyMs": 3.91,
+      "p99LatencyMs": 17
+    },
+    {
+      "name": "producer_rf3_acksall_sync_replication",
+      "producers": 1,
+      "recordsPerSec": 836820,
+      "mbPerSec": 79.8,
+      "avgLatencyMs": 7.04,
+      "p99LatencyMs": 109
+    },
+    {
+      "name": "three_producers_rf3_acks1",
+      "producers": 3,
+      "recordsPerSec": 1496167,
+      "mbPerSec": 142.7,
+      "avgLatencyMs": 19.6,
+      "p99LatencyMs": 107
+    }
+  ]
+}

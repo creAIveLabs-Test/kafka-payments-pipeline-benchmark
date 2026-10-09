@@ -1,0 +1,3 @@
+{"transactions": "2000000", "partitions": "24", "instancesPerStage": "2", "threadsPerInstance": "4",
+ "scorerGuarantee": "at_least_once", "whaleShare": "0", "saltBuckets": "0", "generatorRate": "0 tx/s (0 = unlimited)",
+ "fault": "none", "kafka": "apache/kafka:3.8.0 (KRaft), 3 brokers, replication factor 3, min.insync.replicas 2", "redis": "redis:7-alpine", "postgres": "postgres:16-alpine", "machine": "Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 12 logical cores, 31 GB RAM visible to Linux (WSL2)"}

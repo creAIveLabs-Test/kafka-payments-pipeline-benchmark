@@ -12,12 +12,12 @@ The raw test answers "how fast is Kafka itself?" The pipeline test answers "how 
 
 ## What you need to run this project
 
-| | Minimum | Used for the published results |
-|---|---|---|
-| CPU | 4 cores | Apple M2, 8 cores |
-| RAM | 8 GB (Docker gets about 4 GB) | 16 GB |
-| Disk free | 4 GB | 4-8 GB (the run script refuses below 3 GB) |
-| Software | Docker, Java 17+ | Docker Desktop 29, Java 23 (compiled for 17) |
+| | Minimum | Mac M2 results | Windows i7 results |
+|---|---|---|---|
+| CPU | 4 cores | Apple M2, 8 cores | Intel Core i7-10750H, 6 cores / 12 threads |
+| RAM | 8 GB (Docker gets about 4 GB) | 16 GB | 48 GB (32 GB given to WSL2) |
+| Disk free | 4 GB (10 GB for the cluster runs) | 4-8 GB (the run script refuses below 3 GB) | about 1 TB |
+| Software | Docker, Java 17+ | Docker Desktop 29, Java 23 (compiled for 17) | Windows 11, WSL2 Ubuntu, Docker Desktop, Java 21 |
 
 On one machine, throughput is limited by **CPU cores**, because Kafka, Redis, Postgres and four Java processes share them. A machine with more cores gives higher numbers; results are only comparable on the same hardware.
 
@@ -36,9 +36,9 @@ Each component needs a different kind of machine. Typical choices on AWS (Google
 | Redis | Memory | Memory-optimized | ElastiCache `r6g` / `r7g` |
 | PostgreSQL ledger | Disk IOPS and CPU for writes | Memory-optimized database instance with provisioned IOPS | RDS `r6g` with gp3 / io2 storage |
 
-## How to go from about 34K to 50K+ transactions/sec sustained
+## How to go beyond 50K transactions/sec sustained
 
-What this benchmark measured on one laptop: about 34K transactions/sec end to end, with single stages peaking above 50K/sec. Sustaining 50K+ means giving each part its own resources:
+What this benchmark measured: about 34K transactions/sec end to end on the 8-core Mac, and **56.6K/sec on the 12-thread Windows i7**, where the Postgres ledger (59K/sec) became the slowest stage. Going further means giving each part its own resources:
 
 1. **Separate the parts:** brokers, stream processors, Redis and Postgres each on their own machines, so they stop competing for CPU.
 2. **Scale consumers by partitions:** with 12 partitions, each stage can run up to 12 consumer instances. Add partitions (24, 48) before adding more consumers than that.
