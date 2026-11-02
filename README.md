@@ -1,6 +1,5 @@
 # kafka-distribution-pipeline-benchmark
-<img src="./Kafka%20distribution%20pipeline%20banner(1).png" width="100%" alt="Kafka Distribution Pipeline — 2 million card transactions in, 2 million ledger rows out.">
-
+<img src="PASTE_URL_HERE?raw=true" width="100%" alt="Kafka Distribution Pipeline">
 An end-to-end, reproducible benchmark of a real-time payments pipeline on Kafka, Kafka Streams, Redis and PostgreSQL, run on **2,000,000 synthetic card transactions**, plus a LinkedIn-style raw Kafka throughput test for comparison.
 
 Every number in this README was measured by the code in this repository, on two laptops: an Apple M2 and a Windows i7 workstation. Re-run it and you get your own numbers.
